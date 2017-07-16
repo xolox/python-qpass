@@ -109,7 +109,7 @@ class PasswordStore(PropertyManager):
         except Exception:
             # If we failed then let's at least make sure that the
             # $GPG_TTY environment variable is set correctly.
-            environment.update(GPG_TTY=execute('tty', capture=True, tty=True, silent=True))
+            environment.update(GPG_TTY=execute('tty', capture=True, check=False, tty=True, silent=True))
         return LocalContext(directory=self.directory, environment=environment)
 
     @mutable_property(cached=True)
