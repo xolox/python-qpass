@@ -1,0 +1,7 @@
+coloredlogs >= 6.1
+executor >= 17.1
+humanfriendly >= 4.4
+naturalsort >= 1.5.1
+proc >= 0.14
+property-manager >= 2.0
+verboselogs >= 1.6

@@ -1,0 +1,3 @@
+[run]
+source = qpass
+omit = qpass/tests.py
