@@ -148,6 +148,6 @@ def show_matching_entry(program, arguments):
     """Show the matching entry on the terminal (and copy the password to the clipboard)."""
     name = program.select_entry(*arguments)
     formatted_entry = program.format_entry(name)
-    if not formatted_entry.isspace():
+    if formatted_entry and not formatted_entry.isspace():
         output(formatted_entry)
     program.copy_password(name)
