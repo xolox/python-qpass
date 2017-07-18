@@ -46,7 +46,7 @@ __all__ = (
 )
 
 # Semi-standard module versioning.
-__version__ = '1.0.1'
+__version__ = '1.0.2'
 
 DEFAULT_DIRECTORY = '~/.password-store'
 """
