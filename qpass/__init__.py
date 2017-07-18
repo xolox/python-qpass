@@ -1,7 +1,7 @@
 # qpass: Frontend for pass (the standard unix password manager).
 #
 # Author: Peter Odding <peter@peterodding.com>
-# Last Change: July 16, 2017
+# Last Change: July 18, 2017
 # URL: https://github.com/xolox/python-qpass
 
 """
@@ -197,7 +197,7 @@ class PasswordStore(PropertyManager):
         lines = text.splitlines()
         return lines[0]
 
-    def format_entry(self, name, use_colors=None):
+    def format_entry(self, name, use_colors=None, padding=True):
         """
         Format an entry's text for viewing on a terminal.
 
@@ -207,6 +207,9 @@ class PasswordStore(PropertyManager):
                            :func:`~humanfriendly.terminal.terminal_supports_colors()`
                            will be used to detect whether ANSI escape sequences
                            are supported.
+        :param padding: :data:`True` to add empty lines before and after the
+                        entry and indent the entry's text with two spaces,
+                        :data:`False` to skip the padding.
         :returns: The formatted entry (a string).
         """
         # Determine whether we can use ANSI escape sequences.
@@ -245,8 +248,13 @@ class PasswordStore(PropertyManager):
                             tokens[i] = ansi_wrap(tokens[i], underline=True)
                     # Replace the line with a highlighted version.
                     line = key + ' ' + ' '.join(tokens)
-            lines.append('  ' + line)
-        return '\n%s\n' % '\n'.join(lines)
+            if padding:
+                line = '  ' + line
+            lines.append(line)
+        entry = '\n'.join(lines)
+        if entry and padding:
+            entry = '\n%s\n' % entry
+        return entry
 
     def fuzzy_search(self, *filters):
         """
