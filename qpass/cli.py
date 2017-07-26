@@ -1,7 +1,7 @@
 # qpass: Frontend for pass (the standard unix password manager).
 #
 # Author: Peter Odding <peter@peterodding.com>
-# Last Change: July 18, 2017
+# Last Change: July 27, 2017
 # URL: https://github.com/xolox/python-qpass
 
 """
@@ -44,6 +44,11 @@ Supported options:
     environment variable. If that environment variable isn't
     set the directory ~/.password-store is used.
 
+    You can use the -p, --password-store option multiple times to search more
+    than one password store at the same time. No distinction is made between
+    passwords in different password stores, so the names of passwords need to
+    be recognizable and unique.
+
   -v, --verbose
 
     Increase logging verbosity (can be repeated).
@@ -67,7 +72,7 @@ import coloredlogs
 from humanfriendly.terminal import output, usage, warning
 
 # Modules included in our package.
-from qpass import PasswordStore
+from qpass import PasswordStore, QuickPass, is_clipboard_supported
 from qpass.exceptions import PasswordStoreError
 
 # Public identifiers that require documentation.
@@ -87,9 +92,11 @@ def main():
     """Command line interface for the ``qpass`` program."""
     # Initialize logging to the terminal.
     coloredlogs.install()
-    # Parse the command line arguments.
-    program_opts = {}
+    # Prepare for command line argument parsing.
     action = show_matching_entry
+    program_opts = dict(stores=[])
+    show_opts = dict(use_clipboard=is_clipboard_supported())
+    # Parse the command line arguments.
     try:
         options, arguments = getopt.gnu_getopt(sys.argv[1:], 'elnp:vqh', [
             'edit', 'list', 'no-clipboard', 'password-store=',
@@ -101,9 +108,9 @@ def main():
             elif option in ('-l', '--list'):
                 action = list_matching_entries
             elif option in ('-n', '--no-clipboard'):
-                program_opts['clipboard_enabled'] = False
+                show_opts['use_clipboard'] = False
             elif option in ('-p', '--password-store'):
-                program_opts['directory'] = value
+                program_opts['stores'].append(PasswordStore(directory=value))
             elif option in ('-v', '--verbose'):
                 coloredlogs.increase_verbosity()
             elif option in ('-q', '--quiet'):
@@ -121,8 +128,8 @@ def main():
         sys.exit(1)
     # Execute the requested action.
     try:
-        program = PasswordStore(**program_opts)
-        action(program, arguments)
+        action(QuickPass(**program_opts), arguments,
+               **(show_opts if action == show_matching_entry else {}))
     except PasswordStoreError as e:
         # Known issues don't get a traceback.
         logger.error("%s", e)
@@ -135,19 +142,20 @@ def main():
 
 def edit_matching_entry(program, arguments):
     """Edit the matching entry."""
-    name = program.select_entry(*arguments)
-    program.context.execute('pass', 'edit', name)
+    entry = program.select_entry(*arguments)
+    entry.context.execute('pass', 'edit', entry.name)
 
 
 def list_matching_entries(program, arguments):
     """List the entries matching the given keywords/patterns."""
-    output('\n'.join(program.smart_search(*arguments)))
+    output('\n'.join(entry.name for entry in program.smart_search(*arguments)))
 
 
-def show_matching_entry(program, arguments):
+def show_matching_entry(program, arguments, use_clipboard=True):
     """Show the matching entry on the terminal (and copy the password to the clipboard)."""
-    name = program.select_entry(*arguments)
-    formatted_entry = program.format_entry(name)
+    entry = program.select_entry(*arguments)
+    formatted_entry = entry.format_text(include_password=not use_clipboard)
     if formatted_entry and not formatted_entry.isspace():
         output(formatted_entry)
-    program.copy_password(name)
+    if use_clipboard:
+        entry.copy_password()

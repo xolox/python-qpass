@@ -1,7 +1,7 @@
 # Test suite for the `qpass' Python package.
 #
 # Author: Peter Odding <peter@peterodding.com>
-# Last Change: July 16, 2017
+# Last Change: July 27, 2017
 # URL: https://github.com/xolox/python-qpass
 
 """Test suite for the `qpass` package."""
@@ -25,10 +25,11 @@ from humanfriendly.testing import (
 )
 from humanfriendly.terminal import ansi_strip
 from humanfriendly.text import dedent
-from mock import MagicMock
+from property_manager import set_property
 
 # The module we're testing.
-from qpass import DIRECTORY_VARIABLE, PasswordStore, cli
+import qpass
+from qpass import DIRECTORY_VARIABLE, PasswordEntry, PasswordStore, is_clipboard_supported
 from qpass.cli import main
 from qpass.exceptions import (
     EmptyPasswordStoreError,
@@ -73,16 +74,16 @@ class PasswordStoreTestCase(TestCase):
         """Test the detection whether the clipboard should be used."""
         # Make sure the clipboard is enabled by default on macOS.
         if platform.system().lower() == 'darwin':
-            assert PasswordStore().clipboard_enabled is True
+            assert is_clipboard_supported() is True
         else:
             # Make sure the clipboard is used when $DISPLAY is set.
             with PatchedItem(os.environ, 'DISPLAY', ':0'):
-                assert PasswordStore().clipboard_enabled is True
+                assert is_clipboard_supported() is True
             # Make sure the clipboard is not used when $DISPLAY isn't set.
             environment = os.environ.copy()
             environment.pop('DISPLAY', None)
             with PatchedAttribute(os, 'environ', environment):
-                assert PasswordStore().clipboard_enabled is False
+                assert is_clipboard_supported() is False
 
     def test_directory_variable(self):
         """Test support for ``$PASSWORD_STORE_DIR``."""
@@ -117,23 +118,20 @@ class PasswordStoreTestCase(TestCase):
             program = PasswordStore(directory=directory)
             self.assertRaises(EmptyPasswordStoreError, program.smart_search)
 
-    def test_format_entry(self):
+    def test_format_text(self):
         """Test human friendly formatting of password store entries."""
-        with TemporaryDirectory() as directory:
-            name = 'some/random/password'
-            value = random_string()
-            program = PasswordStore(clipboard_enabled=False, directory=directory)
-            program.get_text = MagicMock(return_value=value)
-            self.assertEquals(
-                # We enable ANSI escape sequences but strip them before we
-                # compare the generated string. This may seem rather pointless
-                # but it ensures that the relevant code paths are covered :-).
-                dedent(ansi_strip(program.format_entry(name, use_colors=True))),
-                dedent('''
-                    some / random / password
+        entry = PasswordEntry(name='some/random/password', store=object())
+        set_property(entry, 'text', random_string())
+        self.assertEquals(
+            # We enable ANSI escape sequences but strip them before we
+            # compare the generated string. This may seem rather pointless
+            # but it ensures that the relevant code paths are covered :-).
+            dedent(ansi_strip(entry.format_text(include_password=True, use_colors=True))),
+            dedent('''
+                some / random / password
 
-                    Password: {value}
-                ''', value=value))
+                Password: {value}
+            ''', value=entry.text))
 
     def test_fuzzy_search(self):
         """Test fuzzy searching."""
@@ -143,20 +141,25 @@ class PasswordStoreTestCase(TestCase):
             touch(os.path.join(directory, 'Something else.gpg'))
             program = PasswordStore(directory=directory)
             # Test a fuzzy search with multiple matches.
-            assert program.fuzzy_search('zbx') == ['Personal/Zabbix', 'Work/Zabbix']
+            matches = program.fuzzy_search('zbx')
+            assert len(matches) == 2
+            assert any(entry.name == 'Personal/Zabbix' for entry in matches)
+            assert any(entry.name == 'Work/Zabbix' for entry in matches)
             # Test a fuzzy search with a single match.
-            assert program.fuzzy_search('p/z') == ['Personal/Zabbix']
+            matches = program.fuzzy_search('p/z')
+            assert len(matches) == 1
+            assert matches[0].name == 'Personal/Zabbix'
             # Test a fuzzy search with `the other' match.
-            assert program.fuzzy_search('w/z') == ['Work/Zabbix']
+            matches = program.fuzzy_search('w/z')
+            assert len(matches) == 1
+            assert matches[0].name == 'Work/Zabbix'
 
     def test_get_password(self):
         """Test getting a password from an entry."""
-        name = 'some/random/password'
-        value = random_string()
-        text = '\n'.join([value, '', 'This is the description'])
-        program = PasswordStore()
-        program.get_text = MagicMock(return_value=text)
-        self.assertEquals(value, program.get_password(name))
+        random_password = random_string()
+        entry = PasswordEntry(name='some/random/password', store=object())
+        set_property(entry, 'text', '\n'.join([random_password, '', 'This is the description']))
+        self.assertEquals(random_password, entry.password)
 
     def test_missing_password_store_error(self):
         """Test the MissingPasswordStoreError exception."""
@@ -181,10 +184,10 @@ class PasswordStoreTestCase(TestCase):
             touch(os.path.join(directory, 'Also with spaces.gpg'))
             program = PasswordStore(directory=directory)
             assert len(program.entries) == 4
-            assert program.entries[0] == 'Also with spaces'
-            assert program.entries[1] == 'foo'
-            assert program.entries[2] == 'foo/bar'
-            assert program.entries[3] == 'foo/bar/baz'
+            assert program.entries[0].name == 'Also with spaces'
+            assert program.entries[1].name == 'foo'
+            assert program.entries[2].name == 'foo/bar'
+            assert program.entries[3].name == 'foo/bar/baz'
 
     def test_select_entry(self):
         """Test password selection."""
@@ -194,9 +197,11 @@ class PasswordStoreTestCase(TestCase):
             touch(os.path.join(directory, 'baz.gpg'))
             program = PasswordStore(directory=directory)
             # Substring search.
-            assert program.select_entry('fo') == 'foo'
+            entry = program.select_entry('fo')
+            assert entry.name == 'foo'
             # Fuzzy search.
-            assert program.select_entry('bz') == 'baz'
+            entry = program.select_entry('bz')
+            assert entry.name == 'baz'
 
     def test_select_entry_interactive(self):
         """Test interactive password selection."""
@@ -209,7 +214,8 @@ class PasswordStoreTestCase(TestCase):
             # specifying the unique substring 'z'.
             program = PasswordStore(directory=directory)
             with CaptureOutput(input='z'):
-                assert program.select_entry('a') == 'baz'
+                entry = program.select_entry('a')
+                assert entry.name == 'baz'
 
     def test_show_entry(self):
         """Test showing of an entry on the terminal."""
@@ -217,11 +223,11 @@ class PasswordStoreTestCase(TestCase):
         # Some voodoo to mock methods in classes that
         # have yet to be instantiated follows :-).
         mocked_class = type(
-            'TestPasswordStore',
-            (PasswordStore,),
-            dict(get_text=MagicMock(return_value=password)),
+            'TestPasswordEntry',
+            (PasswordEntry,),
+            dict(text=password),
         )
-        with PatchedAttribute(cli, 'PasswordStore', mocked_class):
+        with PatchedAttribute(qpass, 'PasswordEntry', mocked_class):
             with TemporaryDirectory() as directory:
                 name = 'some/random/password'
                 touch(os.path.join(directory, '%s.gpg' % name))
@@ -249,9 +255,16 @@ class PasswordStoreTestCase(TestCase):
             touch(os.path.join(directory, 'bar.gpg'))
             touch(os.path.join(directory, 'baz.gpg'))
             program = PasswordStore(directory=directory)
-            assert program.simple_search('fo') == ['foo']
-            assert program.simple_search('a') == ['bar', 'baz']
-            assert program.simple_search('b', 'z') == ['baz']
+            matches = program.simple_search('fo')
+            assert len(matches) == 1
+            assert matches[0].name == 'foo'
+            matches = program.simple_search('a')
+            assert len(matches) == 2
+            assert matches[0].name == 'bar'
+            assert matches[1].name == 'baz'
+            matches = program.simple_search('b', 'z')
+            assert len(matches) == 1
+            assert matches[0].name == 'baz'
 
     def test_smart_search(self):
         """Test smart searching."""
@@ -261,6 +274,10 @@ class PasswordStoreTestCase(TestCase):
             touch(os.path.join(directory, 'Google.gpg'))
             program = PasswordStore(directory=directory)
             # Test a substring match that avoids fuzzy matching.
-            assert program.smart_search('abc') == ['abcdef']
+            matches = program.smart_search('abc')
+            assert len(matches) == 1
+            assert matches[0].name == 'abcdef'
             # Test a fuzzy match to confirm that the fall back works.
-            assert program.smart_search('gg') == ['Google']
+            matches = program.smart_search('gg')
+            assert len(matches) == 1
+            assert matches[0].name == 'Google'

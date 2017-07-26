@@ -82,7 +82,10 @@ Some examples to make this more concrete:
    "``-p``, ``--password-store=DIRECTORY``","Search the password store in ``DIRECTORY``. If this option isn't given
    the password store is located using the ``$PASSWORD_STORE_DIR``
    environment variable. If that environment variable isn't
-   set the directory ~/.password-store is used."
+   set the directory ~/.password-store is used.
+   
+   You can use the ``-p``, ``--password-store`` option multiple times to search
+   multiple password stores as if they were one."
    "``-v``, ``--verbose``",Increase logging verbosity (can be repeated).
    "``-q``, ``--quiet``",Decrease logging verbosity (can be repeated).
    "``-h``, ``--help``",Show this message and exit.
