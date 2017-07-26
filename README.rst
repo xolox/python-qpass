@@ -161,7 +161,7 @@ searching where a pattern like ``e/z`` matches ``Personal/Zabbix`` has since
 become my primary way of interacting with my password stores.
 
 Support for multiple password stores
-------------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 One great aspect of pass_ is the git_ integration that makes it easy to share a
 password store between several devices [#]_ or people [#]_. This use case makes

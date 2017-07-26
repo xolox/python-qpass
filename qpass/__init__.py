@@ -46,14 +46,17 @@ from qpass.exceptions import (
 __all__ = (
     'DEFAULT_DIRECTORY',
     'DIRECTORY_VARIABLE',
+    'AbstractPasswordStore',
+    'PasswordEntry',
     'PasswordStore',
+    'QuickPass',
     '__version__',
     'create_fuzzy_pattern',
     'logger',
 )
 
 # Semi-standard module versioning.
-__version__ = '2.0'
+__version__ = '2.0.1'
 
 DEFAULT_DIRECTORY = '~/.password-store'
 """
