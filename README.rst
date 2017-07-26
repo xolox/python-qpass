@@ -84,8 +84,10 @@ Some examples to make this more concrete:
    environment variable. If that environment variable isn't
    set the directory ~/.password-store is used.
    
-   You can use the ``-p``, ``--password-store`` option multiple times to search
-   multiple password stores as if they were one."
+   You can use the ``-p``, ``--password-store`` option multiple times to search more
+   than one password store at the same time. No distinction is made between
+   passwords in different password stores, so the names of passwords need to
+   be recognizable and unique."
    "``-v``, ``--verbose``",Increase logging verbosity (can be repeated).
    "``-q``, ``--quiet``",Decrease logging verbosity (can be repeated).
    "``-h``, ``--help``",Show this message and exit.
@@ -158,6 +160,28 @@ pathname of the password (including the directory components). The fuzzy
 searching where a pattern like ``e/z`` matches ``Personal/Zabbix`` has since
 become my primary way of interacting with my password stores.
 
+Support for multiple password stores
+------------------------------------
+
+One great aspect of pass_ is the git_ integration that makes it easy to share a
+password store between several devices [#]_ or people [#]_. This use case makes
+it much more likely that you'll end up using multiple password stores, which is
+something that pass_ doesn't specifically make easy.
+
+This is why I added support for querying multiple password stores to qpass in
+version 2.0. For now I've kept things simple which means no distinction is made
+between passwords in different password stores, so the names of passwords need
+to be recognizable and unique.
+
+.. [#] For example I synchronize my password store between my personal laptop
+       and my work laptop and I also have access to my password store on my
+       smartphones (thanks to the Android application `Password Store`_).
+
+.. [#] My team at work also uses pass_ so because I was already using pass_ for
+       personal use, I now find myself frequently searching through multiple
+       password stores.
+
+
 About the name
 ~~~~~~~~~~~~~~
 
@@ -185,25 +209,6 @@ I decided not to rename my project for the following reasons:
 
 - Let's be honest, pass_ is already for power users only, so my qpass frontend
   is most likely not going to see a lot of users ;-).
-
-Future improvements
--------------------
-
-One great aspect of pass_ is the git_ integration that makes it easy to share a
-password store between several devices [#]_ or people [#]_. This use case makes
-it much more likely that you'll end up using multiple password stores, which is
-something that pass_ doesn't specifically make easy. It would be nice if qpass
-can be configured to query more than one password store in a single invocation.
-As long as the passwords are "unique enough" I should be able to make it work
-as if though the password stores are one.
-
-.. [#] For example I synchronize my password store between my personal laptop
-       and my work laptop and I also have access to my password store on my
-       smartphones (thanks to the Android application `Password Store`_).
-
-.. [#] My team at work also uses pass_ so because I was already using pass_ for
-       personal use, I now find myself frequently searching through multiple
-       password stores.
 
 Contact
 -------
