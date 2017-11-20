@@ -1,7 +1,7 @@
 # qpass: Frontend for pass (the standard unix password manager).
 #
 # Author: Peter Odding <peter@peterodding.com>
-# Last Change: July 27, 2017
+# Last Change: November 20, 2017
 # URL: https://github.com/xolox/python-qpass
 
 """
@@ -94,7 +94,7 @@ def main():
     coloredlogs.install()
     # Prepare for command line argument parsing.
     action = show_matching_entry
-    program_opts = dict(stores=[])
+    program_opts = dict()
     show_opts = dict(use_clipboard=is_clipboard_supported())
     # Parse the command line arguments.
     try:
@@ -110,7 +110,8 @@ def main():
             elif option in ('-n', '--no-clipboard'):
                 show_opts['use_clipboard'] = False
             elif option in ('-p', '--password-store'):
-                program_opts['stores'].append(PasswordStore(directory=value))
+                stores = program_opts.setdefault('stores', [])
+                stores.append(PasswordStore(directory=value))
             elif option in ('-v', '--verbose'):
                 coloredlogs.increase_verbosity()
             elif option in ('-q', '--quiet'):
