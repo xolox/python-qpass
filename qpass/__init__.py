@@ -1,7 +1,7 @@
 # qpass: Frontend for pass (the standard unix password manager).
 #
 # Author: Peter Odding <peter@peterodding.com>
-# Last Change: July 27, 2017
+# Last Change: November 20, 2017
 # URL: https://github.com/xolox/python-qpass
 
 """
@@ -56,7 +56,7 @@ __all__ = (
 )
 
 # Semi-standard module versioning.
-__version__ = '2.0.1'
+__version__ = '2.0.2'
 
 DEFAULT_DIRECTORY = '~/.password-store'
 """
