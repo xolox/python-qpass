@@ -1,7 +1,7 @@
 # Test suite for the `qpass' Python package.
 #
 # Author: Peter Odding <peter@peterodding.com>
-# Last Change: July 27, 2017
+# Last Change: November 20, 2017
 # URL: https://github.com/xolox/python-qpass
 
 """Test suite for the `qpass` package."""
@@ -41,7 +41,7 @@ from qpass.exceptions import (
 logger = logging.getLogger(__name__)
 
 
-class PasswordStoreTestCase(TestCase):
+class QuickPassTestCase(TestCase):
 
     """:mod:`unittest` compatible container for `qpass` tests."""
 
