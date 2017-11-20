@@ -14,6 +14,7 @@ import platform
 # External dependencies.
 from humanfriendly.testing import (
     CaptureOutput,
+    MockedHomeDirectory,
     MockedProgram,
     PatchedAttribute,
     PatchedItem,
@@ -44,6 +45,15 @@ logger = logging.getLogger(__name__)
 class QuickPassTestCase(TestCase):
 
     """:mod:`unittest` compatible container for `qpass` tests."""
+
+    def test_cli_defaults(self):
+        """Test default password store discovery in command line interface."""
+        with MockedHomeDirectory() as home:
+            touch(os.path.join(home, '.password-store', 'the-only-entry.gpg'))
+            returncode, output = run_cli(main, '-l')
+            assert returncode == 0
+            entries = output.splitlines(False)
+            assert entries == ['the-only-entry']
 
     def test_cli_invalid_option(self):
         """Test error handling of invalid command line options."""
