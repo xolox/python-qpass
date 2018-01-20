@@ -49,6 +49,10 @@ Supported options:
     passwords in different password stores, so the names of passwords need to
     be recognizable and unique.
 
+  -s, --show-pass
+
+    Show passwords and any extended information in terminal.
+
   -v, --verbose
 
     Increase logging verbosity (can be repeated).
@@ -98,8 +102,8 @@ def main():
     show_opts = dict(use_clipboard=is_clipboard_supported(), show_pass=False)
     # Parse the command line arguments.
     try:
-        options, arguments = getopt.gnu_getopt(sys.argv[1:], 'elnp:vqh', [
-            'edit', 'list', 'no-clipboard', 'password-store=',
+        options, arguments = getopt.gnu_getopt(sys.argv[1:], 'elnsp:vqh', [
+            'edit', 'list', 'no-clipboard', 'show-pass', 'password-store=',
             'verbose', 'quiet', 'help',
         ])
         for option, value in options:
