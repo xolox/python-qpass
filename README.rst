@@ -67,6 +67,11 @@ Some examples to make this more concrete:
 - The pattern 'pe/zbx' will match the name 'Personal/Zabbix'.
 - The pattern 'ba/cc' will match the name 'Bank accounts/Creditcard'.
 
+When a password is copied to the clipboard, any text after the first line will
+be shown on the terminal, to share any additional details about the password
+entry (for example the associated username or email address). The ``-q``, ``--quiet``
+option suppresses this text.
+
 **Supported options:**
 
 .. csv-table::

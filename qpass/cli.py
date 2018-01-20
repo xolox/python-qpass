@@ -1,7 +1,7 @@
 # qpass: Frontend for pass (the standard unix password manager).
 #
 # Author: Peter Odding <peter@peterodding.com>
-# Last Change: November 20, 2017
+# Last Change: January 20, 2018
 # URL: https://github.com/xolox/python-qpass
 
 """
@@ -20,6 +20,11 @@ Some examples to make this more concrete:
 
 - The pattern 'pe/zbx' will match the name 'Personal/Zabbix'.
 - The pattern 'ba/cc' will match the name 'Bank accounts/Creditcard'.
+
+When a password is copied to the clipboard, any text after the first line will
+be shown on the terminal, to share any additional details about the password
+entry (for example the associated username or email address). The -q, --quiet
+option suppresses this text.
 
 Supported options:
 
@@ -96,6 +101,7 @@ def main():
     action = show_matching_entry
     program_opts = dict()
     show_opts = dict(use_clipboard=is_clipboard_supported())
+    verbosity = 0
     # Parse the command line arguments.
     try:
         options, arguments = getopt.gnu_getopt(sys.argv[1:], 'elnp:vqh', [
@@ -114,8 +120,10 @@ def main():
                 stores.append(PasswordStore(directory=value))
             elif option in ('-v', '--verbose'):
                 coloredlogs.increase_verbosity()
+                verbosity += 1
             elif option in ('-q', '--quiet'):
                 coloredlogs.decrease_verbosity()
+                verbosity -= 1
             elif option in ('-h', '--help'):
                 usage(__doc__)
                 return
@@ -129,8 +137,9 @@ def main():
         sys.exit(1)
     # Execute the requested action.
     try:
-        action(QuickPass(**program_opts), arguments,
-               **(show_opts if action == show_matching_entry else {}))
+        show_opts['quiet'] = (verbosity < 0)
+        kw = (show_opts if action == show_matching_entry else {})
+        action(QuickPass(**program_opts), arguments, **kw)
     except PasswordStoreError as e:
         # Known issues don't get a traceback.
         logger.error("%s", e)
@@ -152,11 +161,12 @@ def list_matching_entries(program, arguments):
     output('\n'.join(entry.name for entry in program.smart_search(*arguments)))
 
 
-def show_matching_entry(program, arguments, use_clipboard=True):
+def show_matching_entry(program, arguments, use_clipboard=True, quiet=False):
     """Show the matching entry on the terminal (and copy the password to the clipboard)."""
     entry = program.select_entry(*arguments)
-    formatted_entry = entry.format_text(include_password=not use_clipboard)
-    if formatted_entry and not formatted_entry.isspace():
-        output(formatted_entry)
+    if not quiet:
+        formatted_entry = entry.format_text(include_password=not use_clipboard)
+        if formatted_entry and not formatted_entry.isspace():
+            output(formatted_entry)
     if use_clipboard:
         entry.copy_password()

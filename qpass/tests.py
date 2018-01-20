@@ -1,7 +1,7 @@
 # Test suite for the `qpass' Python package.
 #
 # Author: Peter Odding <peter@peterodding.com>
-# Last Change: November 20, 2017
+# Last Change: January 20, 2018
 # URL: https://github.com/xolox/python-qpass
 
 """Test suite for the `qpass` package."""
@@ -26,6 +26,7 @@ from humanfriendly.testing import (
 )
 from humanfriendly.terminal import ansi_strip
 from humanfriendly.text import dedent
+from mock import MagicMock
 from property_manager import set_property
 
 # The module we're testing.
@@ -73,6 +74,34 @@ class QuickPassTestCase(TestCase):
             assert 'foo' in entries
             assert 'foo/bar' in entries
             assert 'Also with spaces' in entries
+
+    def test_cli_quiet(self):
+        """Test copying of a password without echoing the entry's text."""
+        # Generate a password and some additional text for a dummy password store entry.
+        a_password = random_string()
+        additional_text = random_string()
+        raw_entry = a_password + '\n\n' + additional_text
+        # Prepare a mock method to test that the password is copied,
+        # but without actually invoking the `pass' program.
+        copy_password_method = MagicMock()
+        # Some voodoo to mock methods in classes that
+        # have yet to be instantiated follows :-).
+        mocked_class = type(
+            'TestPasswordEntry',
+            (PasswordEntry,),
+            dict(copy_password=copy_password_method,
+                 text=raw_entry),
+        )
+        with PatchedAttribute(qpass, 'PasswordEntry', mocked_class):
+            with TemporaryDirectory() as directory:
+                touch(os.path.join(directory, 'foo.gpg'))
+                returncode, output = run_cli(main, '--password-store=%s' % directory, '--quiet', 'foo')
+                # Make sure the command succeeded.
+                assert returncode == 0
+                # Make sure the password was copied to the clipboard.
+                copy_password_method.assert_called()
+                # Make sure no output was generated.
+                assert not output.strip()
 
     def test_cli_usage(self):
         """Test the command line usage message."""
