@@ -31,7 +31,7 @@ from property_manager import set_property
 
 # The module we're testing.
 import qpass
-from qpass import DIRECTORY_VARIABLE, PasswordEntry, PasswordStore, is_clipboard_supported
+from qpass import DIRECTORY_VARIABLE, PasswordEntry, PasswordStore, cli, is_clipboard_supported
 from qpass.cli import main
 from qpass.exceptions import (
     EmptyPasswordStoreError,
@@ -113,19 +113,20 @@ class QuickPassTestCase(TestCase):
         mocked_class = type(
             'TestPasswordEntry',
             (PasswordEntry,),
-            dict(copy_password=copy_password_method,
-                 text=raw_entry),
+            dict(text=raw_entry),
         )
+        setattr(mocked_class, 'copy_password', copy_password_method)
         with PatchedAttribute(qpass, 'PasswordEntry', mocked_class):
-            with TemporaryDirectory() as directory:
-                touch(os.path.join(directory, 'foo.gpg'))
-                returncode, output = run_cli(main, '--password-store=%s' % directory, '--quiet', 'foo')
-                # Make sure the command succeeded.
-                assert returncode == 0
-                # Make sure the password was copied to the clipboard.
-                assert copy_password_method.called
-                # Make sure no output was generated.
-                assert not output.strip()
+            with PatchedAttribute(cli, 'is_clipboard_supported', lambda: True):
+                with TemporaryDirectory() as directory:
+                    touch(os.path.join(directory, 'foo.gpg'))
+                    returncode, output = run_cli(main, '--password-store=%s' % directory, '--quiet', 'foo')
+                    # Make sure the command succeeded.
+                    assert returncode == 0
+                    # Make sure the password was copied to the clipboard.
+                    assert copy_password_method.called
+                    # Make sure no output was generated.
+                    assert not output.strip()
 
     def test_cli_usage(self):
         """Test the command line usage message."""
