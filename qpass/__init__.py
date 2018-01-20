@@ -372,6 +372,10 @@ class PasswordEntry(PropertyManager):
         # Extract the password (first line) from the entry.
         lines = self.text.splitlines()
         password = lines.pop(0).strip()
+        # Compile the given patterns to case insensitive regular expressions
+        # and use them to ignore lines that match any of the given filters.
+        patterns = [coerce_pattern(f, re.IGNORECASE) for f in filters]
+        lines = [l for l in lines if not any(p.search(l) for p in patterns)]
         text = trim_empty_lines('\n'.join(lines))
         # Include the password in the formatted text?
         if include_password:
@@ -382,14 +386,9 @@ class PasswordEntry(PropertyManager):
             if use_colors:
                 title = ansi_wrap(title, bold=True)
             text = "%s\n\n%s" % (title, text)
-        # Compile the given strings to case insensitive regular expressions.
-        patterns = [coerce_pattern(f, re.IGNORECASE) for f in filters]
         # Highlight the entry's text using ANSI escape sequences.
         lines = []
         for line in text.splitlines():
-            # Ignore lines that match any of the given filter patterns.
-            if any(p.search(line) for p in patterns):
-                continue
             # Check for a "Key: Value" line.
             match = KEY_VALUE_PATTERN.match(line)
             if match:
