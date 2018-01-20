@@ -123,7 +123,7 @@ class QuickPassTestCase(TestCase):
                 # Make sure the command succeeded.
                 assert returncode == 0
                 # Make sure the password was copied to the clipboard.
-                copy_password_method.assert_called()
+                assert copy_password_method.called
                 # Make sure no output was generated.
                 assert not output.strip()
 
