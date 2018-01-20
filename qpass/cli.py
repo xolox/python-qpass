@@ -49,6 +49,10 @@ Supported options:
     passwords in different password stores, so the names of passwords need to
     be recognizable and unique.
 
+  -s, --show-pass
+
+    Show passwords and any extended information in terminal.
+
   -v, --verbose
 
     Increase logging verbosity (can be repeated).
@@ -95,11 +99,11 @@ def main():
     # Prepare for command line argument parsing.
     action = show_matching_entry
     program_opts = dict()
-    show_opts = dict(use_clipboard=is_clipboard_supported())
+    show_opts = dict(use_clipboard=is_clipboard_supported(), show_pass=False)
     # Parse the command line arguments.
     try:
-        options, arguments = getopt.gnu_getopt(sys.argv[1:], 'elnp:vqh', [
-            'edit', 'list', 'no-clipboard', 'password-store=',
+        options, arguments = getopt.gnu_getopt(sys.argv[1:], 'elnsp:vqh', [
+            'edit', 'list', 'no-clipboard', 'show-pass', 'password-store=',
             'verbose', 'quiet', 'help',
         ])
         for option, value in options:
@@ -109,6 +113,8 @@ def main():
                 action = list_matching_entries
             elif option in ('-n', '--no-clipboard'):
                 show_opts['use_clipboard'] = False
+            elif option in ('-s', '--show_pass'):
+                show_opts['show_pass'] = True
             elif option in ('-p', '--password-store'):
                 stores = program_opts.setdefault('stores', [])
                 stores.append(PasswordStore(directory=value))
@@ -152,11 +158,11 @@ def list_matching_entries(program, arguments):
     output('\n'.join(entry.name for entry in program.smart_search(*arguments)))
 
 
-def show_matching_entry(program, arguments, use_clipboard=True):
+def show_matching_entry(program, arguments, use_clipboard=True, show_pass=False):
     """Show the matching entry on the terminal (and copy the password to the clipboard)."""
     entry = program.select_entry(*arguments)
     formatted_entry = entry.format_text(include_password=not use_clipboard)
-    if formatted_entry and not formatted_entry.isspace():
+    if formatted_entry and not formatted_entry.isspace() and show_pass:
         output(formatted_entry)
     if use_clipboard:
         entry.copy_password()
