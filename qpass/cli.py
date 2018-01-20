@@ -54,6 +54,12 @@ Supported options:
     passwords in different password stores, so the names of passwords need to
     be recognizable and unique.
 
+  -f, --filter=PATTERN
+
+    Don't show lines in the additional details which match the case insensitive
+    regular expression given by PATTERN. This can be used to avoid revealing
+    sensitive details on the terminal. You can use this option more than once.
+
   -v, --verbose
 
     Increase logging verbosity (can be repeated).
@@ -100,12 +106,12 @@ def main():
     # Prepare for command line argument parsing.
     action = show_matching_entry
     program_opts = dict()
-    show_opts = dict(use_clipboard=is_clipboard_supported())
+    show_opts = dict(filters=[], use_clipboard=is_clipboard_supported())
     verbosity = 0
     # Parse the command line arguments.
     try:
-        options, arguments = getopt.gnu_getopt(sys.argv[1:], 'elnp:vqh', [
-            'edit', 'list', 'no-clipboard', 'password-store=',
+        options, arguments = getopt.gnu_getopt(sys.argv[1:], 'elnp:f:vqh', [
+            'edit', 'list', 'no-clipboard', 'password-store=', 'filter=',
             'verbose', 'quiet', 'help',
         ])
         for option, value in options:
@@ -118,6 +124,8 @@ def main():
             elif option in ('-p', '--password-store'):
                 stores = program_opts.setdefault('stores', [])
                 stores.append(PasswordStore(directory=value))
+            elif option in ('-f', '--filter'):
+                show_opts['filters'].append(value)
             elif option in ('-v', '--verbose'):
                 coloredlogs.increase_verbosity()
                 verbosity += 1
@@ -161,11 +169,11 @@ def list_matching_entries(program, arguments):
     output('\n'.join(entry.name for entry in program.smart_search(*arguments)))
 
 
-def show_matching_entry(program, arguments, use_clipboard=True, quiet=False):
+def show_matching_entry(program, arguments, use_clipboard=True, quiet=False, filters=()):
     """Show the matching entry on the terminal (and copy the password to the clipboard)."""
     entry = program.select_entry(*arguments)
     if not quiet:
-        formatted_entry = entry.format_text(include_password=not use_clipboard)
+        formatted_entry = entry.format_text(include_password=not use_clipboard, filters=filters)
         if formatted_entry and not formatted_entry.isspace():
             output(formatted_entry)
     if use_clipboard:

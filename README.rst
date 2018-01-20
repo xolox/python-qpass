@@ -93,6 +93,9 @@ option suppresses this text.
    than one password store at the same time. No distinction is made between
    passwords in different password stores, so the names of passwords need to
    be recognizable and unique."
+   "``-f``, ``--filter=PATTERN``","Don't show lines in the additional details which match the case insensitive
+   regular expression given by ``PATTERN``. This can be used to avoid revealing
+   sensitive details on the terminal. You can use this option more than once."
    "``-v``, ``--verbose``",Increase logging verbosity (can be repeated).
    "``-q``, ``--quiet``",Decrease logging verbosity (can be repeated).
    "``-h``, ``--help``",Show this message and exit.

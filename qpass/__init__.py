@@ -1,7 +1,7 @@
 # qpass: Frontend for pass (the standard unix password manager).
 #
 # Author: Peter Odding <peter@peterodding.com>
-# Last Change: November 20, 2017
+# Last Change: January 20, 2018
 # URL: https://github.com/xolox/python-qpass
 
 """
@@ -19,7 +19,7 @@ import re
 # External dependencies.
 from executor import execute
 from executor.contexts import LocalContext
-from humanfriendly import Timer, format_path, parse_path
+from humanfriendly import Timer, coerce_pattern, format_path, parse_path
 from humanfriendly.terminal import HIGHLIGHT_COLOR, ansi_wrap, terminal_supports_colors
 from humanfriendly.prompts import prompt_for_choice
 from humanfriendly.text import concatenate, format, pluralize, split, trim_empty_lines
@@ -345,7 +345,7 @@ class PasswordEntry(PropertyManager):
         """Copy the password to the clipboard."""
         self.context.execute('pass', 'show', '--clip', self.name)
 
-    def format_text(self, include_password=True, use_colors=None, padding=True):
+    def format_text(self, include_password=True, use_colors=None, padding=True, filters=()):
         """
         Format :attr:`text` for viewing on a terminal.
 
@@ -360,6 +360,10 @@ class PasswordEntry(PropertyManager):
         :param padding: :data:`True` to add empty lines before and after the
                         entry and indent the entry's text with two spaces,
                         :data:`False` to skip the padding.
+        :param filters: An iterable of regular expression patterns (defaults to
+                        an empty tuple). If a line in the entry's text matches
+                        one of these patterns it won't be shown on the
+                        terminal.
         :returns: The formatted entry (a string).
         """
         # Determine whether we can use ANSI escape sequences.
@@ -378,9 +382,14 @@ class PasswordEntry(PropertyManager):
             if use_colors:
                 title = ansi_wrap(title, bold=True)
             text = "%s\n\n%s" % (title, text)
+        # Compile the given strings to case insensitive regular expressions.
+        patterns = [coerce_pattern(f, re.IGNORECASE) for f in filters]
         # Highlight the entry's text using ANSI escape sequences.
         lines = []
         for line in text.splitlines():
+            # Ignore lines that match any of the given filter patterns.
+            if any(p.search(line) for p in patterns):
+                continue
             # Check for a "Key: Value" line.
             match = KEY_VALUE_PATTERN.match(line)
             if match:
@@ -400,6 +409,7 @@ class PasswordEntry(PropertyManager):
                 line = '  ' + line
             lines.append(line)
         text = '\n'.join(lines)
+        text = trim_empty_lines(text)
         if text and padding:
             text = '\n%s\n' % text
         return text

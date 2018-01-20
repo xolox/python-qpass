@@ -75,6 +75,30 @@ class QuickPassTestCase(TestCase):
             assert 'foo/bar' in entries
             assert 'Also with spaces' in entries
 
+    def test_cli_filter(self):
+        """Test filtering of entry text."""
+        # Generate a password and some additional text for a dummy password store entry.
+        a_password = random_string()
+        additional_text = random_string()
+        sensitive_detail = 'password: %s' % random_string()
+        raw_entry = a_password + '\n\n' + additional_text + '\n' + sensitive_detail
+        # Some voodoo to mock methods in classes that
+        # have yet to be instantiated follows :-).
+        mocked_class = type(
+            'TestPasswordEntry',
+            (PasswordEntry,),
+            dict(copy_password=MagicMock(), text=raw_entry),
+        )
+        with PatchedAttribute(qpass, 'PasswordEntry', mocked_class):
+            with TemporaryDirectory() as directory:
+                touch(os.path.join(directory, 'foo.gpg'))
+                returncode, output = run_cli(main, '--password-store=%s' % directory, '--filter=^password:', 'foo')
+                # Make sure the command succeeded.
+                assert returncode == 0
+                # Make sure the expected output was generated.
+                assert additional_text in output
+                assert sensitive_detail not in output
+
     def test_cli_quiet(self):
         """Test copying of a password without echoing the entry's text."""
         # Generate a password and some additional text for a dummy password store entry.
