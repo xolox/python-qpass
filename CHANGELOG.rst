@@ -11,6 +11,14 @@ to `semantic versioning`_.
 .. _Keep a Changelog: http://keepachangelog.com/
 .. _semantic versioning: http://semver.org/
 
+`Release 2.2`_ (2018-04-26)
+---------------------------
+
+- Added this changelog.
+- Added ``license`` key to ``setup.py`` script.
+
+.. _Release 2.2: https://github.com/xolox/python-qpass/compare/2.1...2.2
+
 `Release 2.1`_ (2018-01-20)
 ---------------------------
 
