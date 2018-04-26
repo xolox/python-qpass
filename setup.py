@@ -3,7 +3,7 @@
 # Setup script for the `qpass' package.
 #
 # Author: Peter Odding <peter@peterodding.com>
-# Last Change: July 16, 2017
+# Last Change: April 26, 2018
 # URL: https://github.com/xolox/python-qpass
 
 """
@@ -66,6 +66,7 @@ setup(name='qpass',
       url='https://github.com/xolox/python-qpass',
       author="Peter Odding",
       author_email='peter@peterodding.com',
+      license='MIT',
       packages=find_packages(),
       entry_points=dict(console_scripts=[
           'qpass = qpass.cli:main',
