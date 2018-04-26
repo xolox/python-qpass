@@ -222,9 +222,9 @@ Contact
 -------
 
 The latest version of qpass is available on PyPI_ and GitHub_. The
-documentation is hosted on `Read the Docs`_. For bug reports please create an
-issue on GitHub_. If you have questions, suggestions, etc. feel free to send me
-an e-mail at `peter@peterodding.com`_.
+documentation is hosted on `Read the Docs`_ and includes a changelog_. For bug
+reports please create an issue on GitHub_. If you have questions, suggestions,
+etc. feel free to send me an e-mail at `peter@peterodding.com`_.
 
 License
 -------
@@ -234,7 +234,7 @@ This software is licensed under the `MIT license`_.
 © 2018 Peter Odding.
 
 .. External references:
-
+.. _changelog: https://qpass.readthedocs.io/en/latest/changelog.html
 .. _do-it-yourself: https://security.stackexchange.com/a/18198
 .. _git: https://en.wikipedia.org/wiki/Git
 .. _GitHub: https://github.com/xolox/python-qpass

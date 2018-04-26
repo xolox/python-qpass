@@ -1,28 +1,33 @@
-.. include:: ../README.rst
+qpass: Frontend for pass (the standard unix password manager)
+=============================================================
 
-API documentation
------------------
-
-The following documentation is based on the source code of version |release| of
-the `qpass` package.
+Welcome to the documentation of `qpass` version |release|! The
+following sections are available:
 
 .. contents::
    :local:
 
-:mod:`qpass`
-~~~~~~~~~~~~
+User documentation
+------------------
 
-.. automodule:: qpass
-   :members:
+The readme is the best place to start reading, it's targeted at all users and
+documents the command line interface:
 
-:mod:`qpass.cli`
-~~~~~~~~~~~~~~~~
+.. toctree::
+   readme.rst
 
-.. automodule:: qpass.cli
-   :members:
+API documentation
+-----------------
 
-:mod:`qpass.exceptions`
-~~~~~~~~~~~~~~~~~~~~~~~
+The following API documentation is automatically generated from the source code:
 
-.. automodule:: qpass.exceptions
-   :members:
+.. toctree::
+   api.rst
+
+Change log
+----------
+
+The change log lists notable changes to the project:
+
+.. toctree::
+   changelog.rst
