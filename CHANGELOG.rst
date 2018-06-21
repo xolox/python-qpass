@@ -11,6 +11,19 @@ to `semantic versioning`_.
 .. _Keep a Changelog: http://keepachangelog.com/
 .. _semantic versioning: http://semver.org/
 
+`Release 2.2.1`_ (2018-06-21)
+-----------------------------
+
+Bumped ``proc`` requirement to version 0.15 to pull in an upstream bug fix
+for hanging Travis CI builds caused by ``gpg-agent`` not detaching to the
+background properly because the standard error stream was redirected.
+
+Lots of improvements were made to the ``proc.gpg`` module in proc release 0.15
+and I consider the GPG agent functionality to be *quite* relevant for
+``qpass``, so this warrants a bug fix release.
+
+.. _Release 2.2.1: https://github.com/xolox/python-qpass/compare/2.2...2.2.1
+
 `Release 2.2`_ (2018-04-26)
 ---------------------------
 
