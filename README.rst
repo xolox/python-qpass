@@ -96,6 +96,8 @@ option suppresses this text.
    "``-f``, ``--filter=PATTERN``","Don't show lines in the additional details which match the case insensitive
    regular expression given by ``PATTERN``. This can be used to avoid revealing
    sensitive details on the terminal. You can use this option more than once."
+   "``-x``, ``--exclude=GLOB``","Ignore passwords whose name matches the given ``GLOB`` filename pattern.
+   This argument can be repeated to add multiple exclude patterns."
    "``-v``, ``--verbose``",Increase logging verbosity (can be repeated).
    "``-q``, ``--quiet``",Decrease logging verbosity (can be repeated).
    "``-h``, ``--help``",Show this message and exit.

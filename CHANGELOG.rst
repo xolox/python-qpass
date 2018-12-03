@@ -11,6 +11,43 @@ to `semantic versioning`_.
 .. _Keep a Changelog: http://keepachangelog.com/
 .. _semantic versioning: http://semver.org/
 
+`Release 2.3`_ (2018-12-03)
+---------------------------
+
+Add support for exclude lists (``qpass -x`` or ``qpass --exclude=GLOB``).
+
+Explaining how I got here requires a bit of context:
+
+- For several years now I've been using `Google Authenticator`_ for two-factor
+  authentication (2FA) to online services like GitHub and Trello. Unfortunately
+  Google Authenticator is quite bare bones in that it doesn't allow to export
+  the configured 2FA accounts, which implies that switching phones requires
+  resetting the 2FA configuration of a dozen online services...
+
+- As a workaround you can store the "account configuration token" (the text
+  behind the QR code that you scan) that's available when an account is
+  configured in a secure location (`explanation available here`_). This
+  explains why I recently decided to reinitialize the 2FA configuration of all
+  my online accounts (one last time 😛) so that I can store the tokens in my
+  password store.
+
+- My 2FA tokens are encrypted with a separate, dedicated GPG key pair (with a
+  stronger password) to ensure that the password to each online service is
+  unlocked with a different secret than the 2FA token (so as not to completely
+  undermine the second factor).
+
+- So now whenever I run something like ``qpass github`` I get offered two
+  matches and I need to make a choice, even though that choice will always be
+  the same (the 2FA tokens are stored only as backups).
+
+- Thanks to this qpass release I'm now able to configure the alias ``qpass
+  --exclude='*2fa*'`` in my ``~/.zshrc`` so that I never have to be bothered by
+  the entries containing the 2FA tokens again 😇.
+
+.. _Release 2.3: https://github.com/xolox/python-qpass/compare/2.2.1...2.3
+.. _Google Authenticator: https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2
+.. _explanation available here: https://android.stackexchange.com/a/183010/273993
+
 `Release 2.2.1`_ (2018-06-21)
 -----------------------------
 
