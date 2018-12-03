@@ -1,7 +1,7 @@
 # Makefile for the `qpass' package.
 #
 # Author: Peter Odding <peter@peterodding.com>
-# Last Change: March 30, 2017
+# Last Change: December 3, 2018
 # URL: https://github.com/xolox/python-qpass
 
 PACKAGE_NAME = qpass
@@ -31,8 +31,7 @@ install:
 	@test -d "$(VIRTUAL_ENV)" || mkdir -p "$(VIRTUAL_ENV)"
 	@test -x "$(VIRTUAL_ENV)/bin/python" || virtualenv --quiet "$(VIRTUAL_ENV)"
 	@test -x "$(VIRTUAL_ENV)/bin/pip" || easy_install pip
-	@test -x "$(VIRTUAL_ENV)/bin/pip-accel" || pip install --quiet pip-accel
-	@pip-accel install --quiet --requirement=requirements.txt
+	@pip install --quiet --constraint=constraints.txt --requirement=requirements.txt
 	@pip uninstall --yes $(PACKAGE_NAME) &>/dev/null || true
 	@pip install --quiet --no-deps --ignore-installed .
 
@@ -42,28 +41,29 @@ reset:
 	$(MAKE) install
 
 check: install
-	@scripts/check-code-style.sh
+	@pip install --quiet --constraint=constraints.txt --requirement=requirements-checks.txt
+	@flake8
 
 test: install
-	@pip-accel install --quiet --requirement=requirements-tests.txt
+	@pip install --quiet --constraint=constraints.txt --requirement=requirements-tests.txt
 	@py.test --cov
 	@coverage html
 	@coverage report --fail-under=90 &>/dev/null
 
 tox: install
-	@pip-accel install --quiet tox && tox
+	@pip install --quiet --constraint=constraints.txt tox && tox
 
 readme: install
-	@pip-accel install --quiet cogapp && cog.py -r README.rst
+	@pip install --quiet --constraint=constraints.txt cogapp && cog.py -r README.rst
 
 docs: readme
-	@pip-accel install --quiet sphinx
+	@pip install --quiet --constraint=constraints.txt sphinx
 	@cd docs && sphinx-build -nb html -d build/doctrees . build/html
 
 publish: install
 	git push origin && git push --tags origin
 	$(MAKE) clean
-	pip-accel install --quiet twine wheel
+	pip install --quiet --constraint=constraints.txt twine wheel
 	python setup.py sdist bdist_wheel
 	twine upload dist/*
 	$(MAKE) clean
