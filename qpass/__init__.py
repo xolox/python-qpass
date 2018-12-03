@@ -11,6 +11,7 @@ Frontend for pass_, the standard unix password manager.
 """
 
 # Standard library modules.
+import fnmatch
 import logging
 import os
 import platform
@@ -88,6 +89,24 @@ class AbstractPasswordStore(PropertyManager):
         """A list of :class:`PasswordEntry` objects."""
         raise NotImplementedError()
 
+    @mutable_property(cached=True)
+    def exclude_list(self):
+        """
+        A list of strings with filename patterns to ignore.
+
+        The :mod:`fnmatch` module is used for pattern matching. Filenames as
+        well as patterns are normalized to lowercase before pattern matching is
+        attempted.
+        """
+        return []
+
+    @cached_property
+    def filtered_entries(self):
+        """A list of :class:`PasswordEntry` objects that don't match the exclude list."""
+        return [
+            e for e in self.entries if not any(fnmatch.fnmatch(e.name.lower(), p.lower()) for p in self.exclude_list)
+        ]
+
     def fuzzy_search(self, *filters):
         """
         Perform a "fuzzy" search that matches the given characters in the given order.
@@ -100,7 +119,7 @@ class AbstractPasswordStore(PropertyManager):
             "Performing fuzzy search on %s (%s) ..", pluralize(len(filters), "pattern"), concatenate(map(repr, filters))
         )
         patterns = list(map(create_fuzzy_pattern, filters))
-        for entry in self.entries:
+        for entry in self.filtered_entries:
             if all(p.search(entry.name) for p in patterns):
                 matches.append(entry)
         logger.log(
@@ -144,7 +163,7 @@ class AbstractPasswordStore(PropertyManager):
             pluralize(len(keywords), "keyword"),
             concatenate(map(repr, keywords)),
         )
-        for entry in self.entries:
+        for entry in self.filtered_entries:
             normalized = entry.name.lower()
             if all(kw in normalized for kw in keywords):
                 matches.append(entry)
@@ -175,7 +194,7 @@ class AbstractPasswordStore(PropertyManager):
             logger.verbose("Falling back from substring search to fuzzy search ..")
             matches = self.fuzzy_search(*arguments)
         if not matches:
-            if len(self.entries) > 0:
+            if len(self.filtered_entries) > 0:
                 raise NoMatchingPasswordError(
                     format("No passwords matched the given arguments! (%s)", concatenate(map(repr, arguments)))
                 )

@@ -71,6 +71,19 @@ class QuickPassTestCase(TestCase):
             assert "foo/bar" in entries
             assert "Also with spaces" in entries
 
+    def test_cli_exclude(self):
+        """Test the output of ``qpass --exclude=... --list``."""
+        with TemporaryDirectory() as directory:
+            touch(os.path.join(directory, "foo.gpg"))
+            touch(os.path.join(directory, "foo/bar.gpg"))
+            touch(os.path.join(directory, "Also with spaces.gpg"))
+            returncode, output = run_cli(main, "--password-store=%s" % directory, "--exclude=*bar*", "--list")
+            assert returncode == 0
+            entries = output.splitlines()
+            assert "foo" in entries
+            assert "foo/bar" not in entries
+            assert "Also with spaces" in entries
+
     def test_cli_filter(self):
         """Test filtering of entry text."""
         # Generate a password and some additional text for a dummy password store entry.
