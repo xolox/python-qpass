@@ -1,7 +1,7 @@
 # qpass: Frontend for pass (the standard unix password manager).
 #
 # Author: Peter Odding <peter@peterodding.com>
-# Last Change: June 21, 2018
+# Last Change: December 3, 2018
 # URL: https://github.com/xolox/python-qpass
 
 """
@@ -36,29 +36,25 @@ from property_manager import (
 from verboselogs import VerboseLogger
 
 # Modules included in our package.
-from qpass.exceptions import (
-    EmptyPasswordStoreError,
-    MissingPasswordStoreError,
-    NoMatchingPasswordError,
-)
+from qpass.exceptions import EmptyPasswordStoreError, MissingPasswordStoreError, NoMatchingPasswordError
 
 # Public identifiers that require documentation.
 __all__ = (
-    'DEFAULT_DIRECTORY',
-    'DIRECTORY_VARIABLE',
-    'AbstractPasswordStore',
-    'PasswordEntry',
-    'PasswordStore',
-    'QuickPass',
-    '__version__',
-    'create_fuzzy_pattern',
-    'logger',
+    "DEFAULT_DIRECTORY",
+    "DIRECTORY_VARIABLE",
+    "AbstractPasswordStore",
+    "PasswordEntry",
+    "PasswordStore",
+    "QuickPass",
+    "__version__",
+    "create_fuzzy_pattern",
+    "logger",
 )
 
 # Semi-standard module versioning.
-__version__ = '2.2.1'
+__version__ = "2.2.1"
 
-DEFAULT_DIRECTORY = '~/.password-store'
+DEFAULT_DIRECTORY = "~/.password-store"
 """
 The default password storage directory (a string).
 
@@ -66,10 +62,10 @@ The value of :data:`DEFAULT_DIRECTORY` is normalized using
 :func:`~humanfriendly.parse_path()`.
 """
 
-DIRECTORY_VARIABLE = 'PASSWORD_STORE_DIR'
+DIRECTORY_VARIABLE = "PASSWORD_STORE_DIR"
 """The environment variable that sets the password storage directory (a string)."""
 
-KEY_VALUE_PATTERN = re.compile(r'^(.+\S):\s+(\S.*)$')
+KEY_VALUE_PATTERN = re.compile(r"^(.+\S):\s+(\S.*)$")
 """A compiled regular expression to recognize "Key: Value" lines."""
 
 # Initialize a logger for this module.
@@ -100,15 +96,18 @@ class AbstractPasswordStore(PropertyManager):
         :returns: The matched password names (a list of strings).
         """
         matches = []
-        logger.verbose("Performing fuzzy search on %s (%s) ..",
-                       pluralize(len(filters), "pattern"),
-                       concatenate(map(repr, filters)))
+        logger.verbose(
+            "Performing fuzzy search on %s (%s) ..", pluralize(len(filters), "pattern"), concatenate(map(repr, filters))
+        )
         patterns = list(map(create_fuzzy_pattern, filters))
         for entry in self.entries:
             if all(p.search(entry.name) for p in patterns):
                 matches.append(entry)
-        logger.log(logging.INFO if matches else logging.VERBOSE,
-                   "Matched %s using fuzzy search.", pluralize(len(matches), "password"))
+        logger.log(
+            logging.INFO if matches else logging.VERBOSE,
+            "Matched %s using fuzzy search.",
+            pluralize(len(matches), "password"),
+        )
         return matches
 
     def select_entry(self, *arguments):
@@ -140,15 +139,20 @@ class AbstractPasswordStore(PropertyManager):
         """
         matches = []
         keywords = [kw.lower() for kw in keywords]
-        logger.verbose("Performing simple search on %s (%s) ..",
-                       pluralize(len(keywords), "keyword"),
-                       concatenate(map(repr, keywords)))
+        logger.verbose(
+            "Performing simple search on %s (%s) ..",
+            pluralize(len(keywords), "keyword"),
+            concatenate(map(repr, keywords)),
+        )
         for entry in self.entries:
             normalized = entry.name.lower()
             if all(kw in normalized for kw in keywords):
                 matches.append(entry)
-        logger.log(logging.INFO if matches else logging.VERBOSE,
-                   "Matched %s using simple search.", pluralize(len(matches), "password"))
+        logger.log(
+            logging.INFO if matches else logging.VERBOSE,
+            "Matched %s using simple search.",
+            pluralize(len(matches), "password"),
+        )
         return matches
 
     def smart_search(self, *arguments):
@@ -172,10 +176,9 @@ class AbstractPasswordStore(PropertyManager):
             matches = self.fuzzy_search(*arguments)
         if not matches:
             if len(self.entries) > 0:
-                raise NoMatchingPasswordError(format(
-                    "No passwords matched the given arguments! (%s)",
-                    concatenate(map(repr, arguments)),
-                ))
+                raise NoMatchingPasswordError(
+                    format("No passwords matched the given arguments! (%s)", concatenate(map(repr, arguments)))
+                )
             else:
                 msg = "You don't have any passwords yet! (no *.gpg files found)"
                 raise EmptyPasswordStoreError(msg)
@@ -190,7 +193,7 @@ class QuickPass(AbstractPasswordStore):
     :see also: The :class:`PasswordStore` class to query a single password store.
     """
 
-    repr_properties = ['stores']
+    repr_properties = ["stores"]
     """The properties included in the output of :func:`repr()`."""
 
     @cached_property
@@ -215,7 +218,7 @@ class PasswordStore(AbstractPasswordStore):
     :see also: The :class:`QuickPass` class to query multiple password stores.
     """
 
-    repr_properties = ['directory', 'entries']
+    repr_properties = ["directory", "entries"]
     """The properties included in the output of :func:`repr()`."""
 
     @mutable_property(cached=True)
@@ -246,13 +249,8 @@ class PasswordStore(AbstractPasswordStore):
         except Exception:
             # If we failed then let's at least make sure that the
             # $GPG_TTY environment variable is set correctly.
-            environment.update(GPG_TTY=execute(
-                'tty', capture=True, check=False, tty=True, silent=True,
-            ))
-        return LocalContext(
-            directory=self.directory,
-            environment=environment,
-        )
+            environment.update(GPG_TTY=execute("tty", capture=True, check=False, tty=True, silent=True))
+        return LocalContext(directory=self.directory, environment=environment)
 
     @mutable_property(cached=True)
     def directory(self):
@@ -275,10 +273,10 @@ class PasswordStore(AbstractPasswordStore):
     def directory(self, value):
         """Normalize the value of :attr:`directory` when it's set."""
         # Normalize the value of `directory'.
-        set_property(self, 'directory', parse_path(value))
+        set_property(self, "directory", parse_path(value))
         # Clear the computed values of `context' and `entries'.
-        clear_property(self, 'context')
-        clear_property(self, 'entries')
+        clear_property(self, "context")
+        clear_property(self, "entries")
 
     @cached_property
     def entries(self):
@@ -286,16 +284,13 @@ class PasswordStore(AbstractPasswordStore):
         timer = Timer()
         passwords = []
         logger.info("Scanning %s ..", format_path(self.directory))
-        listing = self.context.capture('find', '-type', 'f', '-name', '*.gpg', '-print0')
-        for filename in split(listing, '\0'):
+        listing = self.context.capture("find", "-type", "f", "-name", "*.gpg", "-print0")
+        for filename in split(listing, "\0"):
             basename, extension = os.path.splitext(filename)
-            if extension == '.gpg':
+            if extension == ".gpg":
                 # We use os.path.normpath() to remove the leading `./' prefixes
                 # that `find' adds because it searches the working directory.
-                passwords.append(PasswordEntry(
-                    name=os.path.normpath(basename),
-                    store=self,
-                ))
+                passwords.append(PasswordEntry(name=os.path.normpath(basename), store=self))
         logger.verbose("Found %s in %s.", pluralize(len(passwords), "password"), timer)
         return natsort(passwords, key=lambda e: e.name)
 
@@ -315,7 +310,7 @@ class PasswordEntry(PropertyManager):
 
     """:class:`PasswordEntry` objects bind the name of a password to the store that contains the password."""
 
-    repr_properties = ['name']
+    repr_properties = ["name"]
     """The properties included in the output of :func:`repr()`."""
 
     @property
@@ -339,11 +334,11 @@ class PasswordEntry(PropertyManager):
     @cached_property
     def text(self):
         """The full text of the entry (a string)."""
-        return self.context.capture('pass', 'show', self.name)
+        return self.context.capture("pass", "show", self.name)
 
     def copy_password(self):
         """Copy the password to the clipboard."""
-        self.context.execute('pass', 'show', '--clip', self.name)
+        self.context.execute("pass", "show", "--clip", self.name)
 
     def format_text(self, include_password=True, use_colors=None, padding=True, filters=()):
         """
@@ -376,13 +371,13 @@ class PasswordEntry(PropertyManager):
         # and use them to ignore lines that match any of the given filters.
         patterns = [coerce_pattern(f, re.IGNORECASE) for f in filters]
         lines = [l for l in lines if not any(p.search(l) for p in patterns)]
-        text = trim_empty_lines('\n'.join(lines))
+        text = trim_empty_lines("\n".join(lines))
         # Include the password in the formatted text?
         if include_password:
             text = "Password: %s\n%s" % (password, text)
         # Add the name to the entry (only when there's something to show).
         if text and not text.isspace():
-            title = ' / '.join(split(self.name, '/'))
+            title = " / ".join(split(self.name, "/"))
             if use_colors:
                 title = ansi_wrap(title, bold=True)
             text = "%s\n\n%s" % (title, text)
@@ -400,17 +395,17 @@ class PasswordEntry(PropertyManager):
                     # Underline hyperlinks in the value.
                     tokens = value.split()
                     for i in range(len(tokens)):
-                        if '://' in tokens[i]:
+                        if "://" in tokens[i]:
                             tokens[i] = ansi_wrap(tokens[i], underline=True)
                     # Replace the line with a highlighted version.
-                    line = key + ' ' + ' '.join(tokens)
+                    line = key + " " + " ".join(tokens)
             if padding:
-                line = '  ' + line
+                line = "  " + line
             lines.append(line)
-        text = '\n'.join(lines)
+        text = "\n".join(lines)
         text = trim_empty_lines(text)
         if text and padding:
-            text = '\n%s\n' % text
+            text = "\n%s\n" % text
         return text
 
 
@@ -425,7 +420,7 @@ def create_fuzzy_pattern(pattern):
     input pattern and compiling the resulting expression into a case
     insensitive regular expression.
     """
-    return re.compile('.*'.join(map(re.escape, pattern)), re.IGNORECASE)
+    return re.compile(".*".join(map(re.escape, pattern)), re.IGNORECASE)
 
 
 def is_clipboard_supported():
@@ -434,4 +429,4 @@ def is_clipboard_supported():
 
     :returns: :data:`True` if the clipboard is supported, :data:`False` otherwise.
     """
-    return platform.system().lower() == 'darwin' or bool(os.environ.get('DISPLAY'))
+    return platform.system().lower() == "darwin" or bool(os.environ.get("DISPLAY"))

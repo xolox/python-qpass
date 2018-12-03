@@ -1,7 +1,7 @@
 # qpass: Frontend for pass (the standard unix password manager).
 #
 # Author: Peter Odding <peter@peterodding.com>
-# Last Change: January 20, 2018
+# Last Change: December 3, 2018
 # URL: https://github.com/xolox/python-qpass
 
 """
@@ -87,13 +87,7 @@ from qpass import PasswordStore, QuickPass, is_clipboard_supported
 from qpass.exceptions import PasswordStoreError
 
 # Public identifiers that require documentation.
-__all__ = (
-    'edit_matching_entry',
-    'list_matching_entries',
-    'logger',
-    'main',
-    'show_matching_entry',
-)
+__all__ = ("edit_matching_entry", "list_matching_entries", "logger", "main", "show_matching_entry")
 
 # Initialize a logger for this module.
 logger = logging.getLogger(__name__)
@@ -110,29 +104,30 @@ def main():
     verbosity = 0
     # Parse the command line arguments.
     try:
-        options, arguments = getopt.gnu_getopt(sys.argv[1:], 'elnp:f:vqh', [
-            'edit', 'list', 'no-clipboard', 'password-store=', 'filter=',
-            'verbose', 'quiet', 'help',
-        ])
+        options, arguments = getopt.gnu_getopt(
+            sys.argv[1:],
+            "elnp:f:vqh",
+            ["edit", "list", "no-clipboard", "password-store=", "filter=", "verbose", "quiet", "help"],
+        )
         for option, value in options:
-            if option in ('-e', '--edit'):
+            if option in ("-e", "--edit"):
                 action = edit_matching_entry
-            elif option in ('-l', '--list'):
+            elif option in ("-l", "--list"):
                 action = list_matching_entries
-            elif option in ('-n', '--no-clipboard'):
-                show_opts['use_clipboard'] = False
-            elif option in ('-p', '--password-store'):
-                stores = program_opts.setdefault('stores', [])
+            elif option in ("-n", "--no-clipboard"):
+                show_opts["use_clipboard"] = False
+            elif option in ("-p", "--password-store"):
+                stores = program_opts.setdefault("stores", [])
                 stores.append(PasswordStore(directory=value))
-            elif option in ('-f', '--filter'):
-                show_opts['filters'].append(value)
-            elif option in ('-v', '--verbose'):
+            elif option in ("-f", "--filter"):
+                show_opts["filters"].append(value)
+            elif option in ("-v", "--verbose"):
                 coloredlogs.increase_verbosity()
                 verbosity += 1
-            elif option in ('-q', '--quiet'):
+            elif option in ("-q", "--quiet"):
                 coloredlogs.decrease_verbosity()
                 verbosity -= 1
-            elif option in ('-h', '--help'):
+            elif option in ("-h", "--help"):
                 usage(__doc__)
                 return
             else:
@@ -145,8 +140,8 @@ def main():
         sys.exit(1)
     # Execute the requested action.
     try:
-        show_opts['quiet'] = (verbosity < 0)
-        kw = (show_opts if action == show_matching_entry else {})
+        show_opts["quiet"] = verbosity < 0
+        kw = show_opts if action == show_matching_entry else {}
         action(QuickPass(**program_opts), arguments, **kw)
     except PasswordStoreError as e:
         # Known issues don't get a traceback.
@@ -161,12 +156,12 @@ def main():
 def edit_matching_entry(program, arguments):
     """Edit the matching entry."""
     entry = program.select_entry(*arguments)
-    entry.context.execute('pass', 'edit', entry.name)
+    entry.context.execute("pass", "edit", entry.name)
 
 
 def list_matching_entries(program, arguments):
     """List the entries matching the given keywords/patterns."""
-    output('\n'.join(entry.name for entry in program.smart_search(*arguments)))
+    output("\n".join(entry.name for entry in program.smart_search(*arguments)))
 
 
 def show_matching_entry(program, arguments, use_clipboard=True, quiet=False, filters=()):

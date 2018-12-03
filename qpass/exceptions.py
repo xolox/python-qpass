@@ -1,18 +1,13 @@
 # qpass: Frontend for pass (the standard unix password manager).
 #
 # Author: Peter Odding <peter@peterodding.com>
-# Last Change: July 16, 2017
+# Last Change: December 3, 2018
 # URL: https://github.com/xolox/python-qpass
 
 """Custom exceptions raised by :mod:`qpass`."""
 
 # Public identifiers that require documentation.
-__all__ = (
-    'EmptyPasswordStoreError',
-    'MissingPasswordStoreError',
-    'NoMatchingPasswordError',
-    'PasswordStoreError',
-)
+__all__ = ("EmptyPasswordStoreError", "MissingPasswordStoreError", "NoMatchingPasswordError", "PasswordStoreError")
 
 
 class PasswordStoreError(Exception):
