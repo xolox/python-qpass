@@ -197,7 +197,7 @@ About the name
 
 As explained above I initially wrote and named qpass with no intention of ever
 publishing it. However since then my team at work has started using pass_ to
-manage a shared pasword store and ever since we started doing that I've missed
+manage a shared password store and ever since we started doing that I've missed
 the ability to query that password store using qpass :-).
 
 Publishing qpass as an open source project with a proper Python package
