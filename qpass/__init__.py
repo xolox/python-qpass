@@ -303,7 +303,7 @@ class PasswordStore(AbstractPasswordStore):
         timer = Timer()
         passwords = []
         logger.info("Scanning %s ..", format_path(self.directory))
-        listing = self.context.capture("find", "-type", "f", "-name", "*.gpg", "-print0")
+        listing = self.context.capture("find", self.directory, "-type", "f", "-name", "*.gpg", "-print0")
         for filename in split(listing, "\0"):
             basename, extension = os.path.splitext(filename)
             if extension == ".gpg":
